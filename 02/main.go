@@ -27,12 +27,15 @@ Scores:
 
 - PAPER ROCK
 * PAPER PAPER
-PAPER SCISSORS
+- PAPER SCISSORS
 
 - SCISSORS ROCK
-SCISSORS PAPER
+- SCISSORS PAPER
 * SCISSORS SCISSORS
 
+X means you need to lose, Y means you need to end the round in a draw, and Z means you need to win. Good luck!"
+
+1st answer: 9651
 */
 
 package main
@@ -60,6 +63,20 @@ var sign2score = map[int]int{
 	ROCK:     1,
 	PAPER:    2,
 	SCISSORS: 3,
+}
+
+// maps a sign to what gets defeated
+var winTable = map[int]int{
+	ROCK:     SCISSORS,
+	PAPER:    ROCK,
+	SCISSORS: ROCK,
+}
+
+// maps a sign to what lose to
+var loseTable = map[int]int{
+	ROCK:     PAPER,
+	PAPER:    SCISSORS,
+	SCISSORS: ROCK,
 }
 
 func match(opponent, player int) (score int) {
@@ -137,16 +154,25 @@ func run() error {
 		}
 
 		opp := opponentHand(values[0])
-		pl := playerHand(values[1])
 
-		fmt.Printf("opponent: %d, player: %d\n", opp, pl)
-		score += match(opp, pl)
+		// X means you need to lose, Y means you need to end the round in a draw, and Z means you need to win. Good luck!"
+		switch values[1] {
+		case "X":
+			hand := winTable[opp]
+			score += (sign2score[hand] + LOST)
+		case "Y":
+			score += (sign2score[opp] + DRAW)
+		case "Z":
+			hand := loseTable[opp]
+			score += (sign2score[hand] + WON)
+		}
 	}
 
 	if err := scanner.Err(); err != nil {
 		return err
 	}
 
+	// not 11866 nor 10497
 	fmt.Printf("score: %d\n", score)
 
 	return nil
