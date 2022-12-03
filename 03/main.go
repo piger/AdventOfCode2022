@@ -54,6 +54,8 @@ func run() error {
 	}
 	defer fh.Close()
 
+	var score int
+
 	s := bufio.NewScanner(fh)
 	for s.Scan() {
 		line := s.Text()
@@ -65,21 +67,15 @@ func run() error {
 		fmt.Printf("comp1: %s\n", comp1)
 		fmt.Printf("comp2: %s\n", comp2)
 
-		ruck := make(map[rune]int)
-		for _, r := range comp1 {
-			ruck[r] = 1
-		}
-
-		for _, r := range comp2 {
-			if _, ok := ruck[r]; ok {
-				ruck[r]++
+		common := commonRunes(comp1, comp2)
+		for _, r := range common {
+			fmt.Printf("%c", r)
+			priority, ok := scores[r]
+			if !ok {
+				return fmt.Errorf("missing score for %c", r)
 			}
-		}
 
-		for r, val := range ruck {
-			if val > 1 {
-				fmt.Printf("%c", r)
-			}
+			score += priority
 		}
 		fmt.Println()
 	}
@@ -87,6 +83,8 @@ func run() error {
 	if err := s.Err(); err != nil {
 		return err
 	}
+
+	fmt.Printf("score: %d\n", score)
 
 	return nil
 }
