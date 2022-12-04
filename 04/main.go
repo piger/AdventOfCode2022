@@ -8,40 +8,42 @@ import (
 	"strings"
 )
 
-func getBoundaries(s string) (start, end int, err error) {
+type RangeSet struct {
+	Start int
+	End   int
+}
+
+func NewRangeSet(s string) (*RangeSet, error) {
 	fields := strings.Split(s, "-")
 	if len(fields) != 2 {
-		err = fmt.Errorf("wrong number of fields in range: %d (%q)", len(fields), s)
-		return
+		return nil, fmt.Errorf("wrong number of elements in RangeSet: %d", len(fields))
 	}
-
-	start, err = strconv.Atoi(fields[0])
+	start, err := strconv.Atoi(fields[0])
 	if err != nil {
-		return
+		return nil, err
 	}
-
-	end, err = strconv.Atoi(fields[1])
+	end, err := strconv.Atoi(fields[1])
 	if err != nil {
-		return
+		return nil, err
 	}
 
-	return
+	r := &RangeSet{
+		Start: start,
+		End:   end,
+	}
+	return r, nil
 }
 
-func intersection(small, large map[int]bool) bool {
-	for key := range small {
-		if _, ok := large[key]; !ok {
-			return false
-		}
+func (r *RangeSet) Contains(other *RangeSet) bool {
+	if r.Start >= other.Start && r.End <= other.End {
+		return true
 	}
-	return true
+	return false
 }
 
-func anyIntersection(one, other map[int]bool) bool {
-	for key := range one {
-		if _, ok := other[key]; ok {
-			return true
-		}
+func (r *RangeSet) ContainsAny(other *RangeSet) bool {
+	if r.Start <= other.End && r.End >= other.End {
+		return true
 	}
 	return false
 }
@@ -64,39 +66,20 @@ func run() error {
 			return fmt.Errorf("line has wrong number of fields: %d (%q)", len(fields), line)
 		}
 
-		start1, end1, err := getBoundaries(fields[0])
+		pair1, err := NewRangeSet(fields[0])
 		if err != nil {
 			return err
 		}
-		slot1 := make(map[int]bool)
-		for i := start1; i <= end1; i++ {
-			slot1[i] = true
-		}
-		len1 := end1 - start1
 
-		start2, end2, err := getBoundaries(fields[1])
+		pair2, err := NewRangeSet(fields[1])
 		if err != nil {
 			return err
 		}
-		slot2 := make(map[int]bool)
-		for i := start2; i <= end2; i++ {
-			slot2[i] = true
-		}
-		len2 := end2 - start2
 
-		if len1 > len2 {
-			contained := intersection(slot2, slot1)
-			if contained {
-				counter++
-			}
-		} else {
-			contained := intersection(slot1, slot2)
-			if contained {
-				counter++
-			}
+		if pair1.Contains(pair2) || pair2.Contains(pair1) {
+			counter++
 		}
-
-		if anyIntersection(slot1, slot2) {
+		if pair1.ContainsAny(pair2) || pair2.ContainsAny(pair1) {
 			counter2++
 		}
 	}
@@ -105,6 +88,8 @@ func run() error {
 		return err
 	}
 
+	// 582 assignments have ranges that fully contain each other
+	// 893 assignments have ranges that overlaps at all
 	fmt.Printf("%d assignments have ranges that fully contain each other\n", counter)
 	fmt.Printf("%d assignments have ranges that overlaps at all\n", counter2)
 
