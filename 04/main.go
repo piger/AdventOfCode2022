@@ -34,13 +34,19 @@ func NewRangeSet(s string) (*RangeSet, error) {
 	return r, nil
 }
 
+func (r *RangeSet) String() string {
+	return fmt.Sprintf("[%d-%d]", r.Start, r.End)
+}
+
 func (r *RangeSet) Contains(other *RangeSet) bool {
-	if r.Start >= other.Start && r.End <= other.End {
+	if r.Start <= other.Start && r.End >= other.End {
 		return true
 	}
 	return false
 }
 
+// ContainsAny is the same as Contains(), but with a subtle difference: it checks that
+// r.Starts is equal or less than other.End.
 func (r *RangeSet) ContainsAny(other *RangeSet) bool {
 	if r.Start <= other.End && r.End >= other.End {
 		return true
