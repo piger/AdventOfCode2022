@@ -2,10 +2,15 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"os"
 	"regexp"
 	"strconv"
+)
+
+var (
+	modeFlag = flag.Int("mode", 1, "Run mode: 1 for the 1st problem and 2 for the 2nd")
 )
 
 var moveCmdRe = regexp.MustCompile(`^move (?P<num>\d+) from (?P<src>\d+) to (?P<dst>\d+)`)
@@ -80,12 +85,11 @@ func run() error {
 		}
 	}
 
-	for _, stack := range stacks {
-		fmt.Printf("stack %d: %q\n", stack.ID, stack.Crates)
-	}
-
-	var moveMode int
-	moveMode = 2
+	/*
+		for _, stack := range stacks {
+			fmt.Printf("stack %d: %q\n", stack.ID, stack.Crates)
+		}
+	*/
 
 	// read the move commands
 	for s.Scan() {
@@ -95,7 +99,7 @@ func run() error {
 		idxNum := moveCmdRe.SubexpIndex("num")
 		idxSrc := moveCmdRe.SubexpIndex("src")
 		idxDst := moveCmdRe.SubexpIndex("dst")
-		fmt.Printf("move %s items from %s to %s\n", matches[idxNum], matches[idxSrc], matches[idxDst])
+		// fmt.Printf("move %s items from %s to %s\n", matches[idxNum], matches[idxSrc], matches[idxDst])
 		num, err := strconv.Atoi(matches[idxNum])
 		if err != nil {
 			return err
@@ -111,7 +115,7 @@ func run() error {
 			return err
 		}
 
-		if moveMode == 1 {
+		if *modeFlag == 1 {
 			// move each crate
 			for i := 0; i < num; i++ {
 				// fmt.Printf("before: %q %q\n", stacks[src-1].Crates, stacks[dst-1].Crates)
@@ -131,11 +135,11 @@ func run() error {
 		}
 	}
 
-	var solution1 []rune
+	var solution []rune
 	for i := range stacks {
-		solution1 = append(solution1, stacks[i].Crates[0])
+		solution = append(solution, stacks[i].Crates[0])
 	}
-	fmt.Printf("solution 1: %s\n", string(solution1))
+	fmt.Printf("solution (mode %d): %s\n", *modeFlag, string(solution))
 
 	if err := s.Err(); err != nil {
 		return err
@@ -145,6 +149,13 @@ func run() error {
 }
 
 func main() {
+	flag.Parse()
+
+	if *modeFlag != 1 && *modeFlag != 2 {
+		fmt.Println("invalid mode flag: the allowed values are '1' and '2'")
+		os.Exit(1)
+	}
+
 	if err := run(); err != nil {
 		fmt.Printf("error: %s\n", err)
 	}
