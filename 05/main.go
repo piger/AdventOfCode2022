@@ -7,6 +7,10 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
+	"time"
+
+	tm "github.com/buger/goterm"
 )
 
 var (
@@ -42,6 +46,51 @@ func insert[T any](a []T, index int, value T) []T {
 
 func remove[T any](a []T, index int) []T {
 	return append(a[:index], a[index+1:]...)
+}
+
+func renderStacks(stacks []Stack) (result []string) {
+	l := len(stacks)
+	footer := []string{" "}
+
+	for i := 0; i < l; i++ {
+		footer = append(footer, strconv.Itoa(i+1))
+		footer = append(footer, strings.Repeat(" ", 3))
+	}
+
+	topCrates := 0
+	for _, stack := range stacks {
+		if len(stack.Crates) > topCrates {
+			topCrates = len(stack.Crates)
+		}
+	}
+
+	var lines []string
+	for i := topCrates; i > 0; i-- {
+		var line []string
+
+		for _, stack := range stacks {
+			diff := topCrates - len(stack.Crates)
+
+			if len(stack.Crates) == 0 {
+				line = append(line, strings.Repeat(" ", 4))
+			} else {
+				x := i - 1 - diff
+				if x < 0 {
+					continue
+				}
+				line = append(line, fmt.Sprintf("[%c] ", stack.Crates[x]))
+			}
+		}
+		lines = append(lines, strings.Join(line, ""))
+	}
+
+	for i := len(lines) - 1; i > 0; i-- {
+		result = append(result, lines[i])
+	}
+
+	result = append(result, strings.Join(footer, ""))
+
+	return
 }
 
 func run() error {
@@ -133,13 +182,22 @@ func run() error {
 				// fmt.Printf("after: %q %q\n", stacks[src-1].Crates, stacks[dst-1].Crates)
 			}
 		}
+
+		tm.Clear()
+		tm.MoveCursor(1, 1)
+		for _, line := range renderStacks(stacks) {
+			// fmt.Println(line)
+			tm.Println(line)
+			tm.Flush()
+		}
+		time.Sleep(1 * time.Second)
 	}
 
 	var solution []rune
 	for i := range stacks {
 		solution = append(solution, stacks[i].Crates[0])
 	}
-	fmt.Printf("solution (mode %d): %s\n", *modeFlag, string(solution))
+	// fmt.Printf("solution (mode %d): %s\n", *modeFlag, string(solution))
 
 	if err := s.Err(); err != nil {
 		return err
