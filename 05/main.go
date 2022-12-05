@@ -14,7 +14,8 @@ import (
 )
 
 var (
-	modeFlag = flag.Int("mode", 1, "Run mode: 1 for the 1st problem and 2 for the 2nd")
+	modeFlag   = flag.Int("mode", 1, "Run mode: 1 for the 1st problem and 2 for the 2nd")
+	printDelay = flag.Duration("delay", 200*time.Millisecond, "Delay between renders")
 )
 
 var moveCmdRe = regexp.MustCompile(`^move (?P<num>\d+) from (?P<src>\d+) to (?P<dst>\d+)`)
@@ -85,7 +86,7 @@ func renderStacks(stacks []Stack) (result []string) {
 		lines = append(lines, strings.Join(line, ""))
 	}
 
-	for i := len(lines) - 1; i > 0; i-- {
+	for i := len(lines) - 1; i >= 0; i-- {
 		result = append(result, lines[i])
 	}
 
@@ -198,7 +199,7 @@ func run() error {
 		}
 		tm.Printf("move %s items from %s to %s\n", matches[idxNum], matches[idxSrc], matches[idxDst])
 		tm.Flush()
-		time.Sleep(time.Duration(200) * time.Millisecond)
+		time.Sleep(*printDelay)
 	}
 
 	var solution []rune
