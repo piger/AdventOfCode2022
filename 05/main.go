@@ -30,7 +30,7 @@ func longestLine(lines []string) (longest int) {
 	return
 }
 
-func insert(a []rune, index int, value rune) []rune {
+func insert[T any](a []T, index int, value T) []T {
 	if len(a) == index {
 		return append(a, value)
 	}
@@ -40,7 +40,7 @@ func insert(a []rune, index int, value rune) []rune {
 	return a
 }
 
-func remove(a []rune, index int) []rune {
+func remove[T any](a []T, index int) []T {
 	return append(a[:index], a[index+1:]...)
 }
 
