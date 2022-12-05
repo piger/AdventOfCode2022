@@ -76,6 +76,7 @@ func renderStacks(stacks []Stack) (result []string) {
 			} else {
 				x := i - 1 - diff
 				if x < 0 {
+					line = append(line, strings.Repeat(" ", 4))
 					continue
 				}
 				line = append(line, fmt.Sprintf("[%c] ", stack.Crates[x]))
@@ -140,6 +141,13 @@ func run() error {
 		}
 	*/
 
+	tm.Clear()
+	tm.MoveCursor(1, 1)
+	for _, line := range renderStacks(stacks) {
+		tm.Println(line)
+	}
+	tm.Flush()
+
 	// read the move commands
 	for s.Scan() {
 		line := s.Text()
@@ -186,11 +194,11 @@ func run() error {
 		tm.Clear()
 		tm.MoveCursor(1, 1)
 		for _, line := range renderStacks(stacks) {
-			// fmt.Println(line)
 			tm.Println(line)
-			tm.Flush()
 		}
-		time.Sleep(1 * time.Second)
+		tm.Printf("move %s items from %s to %s\n", matches[idxNum], matches[idxSrc], matches[idxDst])
+		tm.Flush()
+		time.Sleep(time.Duration(200) * time.Millisecond)
 	}
 
 	var solution []rune
