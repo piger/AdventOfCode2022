@@ -84,6 +84,9 @@ func run() error {
 		fmt.Printf("stack %d: %q\n", stack.ID, stack.Crates)
 	}
 
+	var moveMode int
+	moveMode = 2
+
 	// read the move commands
 	for s.Scan() {
 		line := s.Text()
@@ -92,7 +95,7 @@ func run() error {
 		idxNum := moveCmdRe.SubexpIndex("num")
 		idxSrc := moveCmdRe.SubexpIndex("src")
 		idxDst := moveCmdRe.SubexpIndex("dst")
-		// fmt.Printf("move %s items from %s to %s\n", matches[idxNum], matches[idxSrc], matches[idxDst])
+		fmt.Printf("move %s items from %s to %s\n", matches[idxNum], matches[idxSrc], matches[idxDst])
 		num, err := strconv.Atoi(matches[idxNum])
 		if err != nil {
 			return err
@@ -108,13 +111,23 @@ func run() error {
 			return err
 		}
 
-		// move each crate
-		for i := 0; i < num; i++ {
-			// fmt.Printf("before: %q %q\n", stacks[src-1].Crates, stacks[dst-1].Crates)
-			crate := stacks[src-1].Crates[0]
-			stacks[dst-1].Crates = insert(stacks[dst-1].Crates, 0, crate)
-			stacks[src-1].Crates = remove(stacks[src-1].Crates, 0)
-			// fmt.Printf("after: %q %q\n", stacks[src-1].Crates, stacks[dst-1].Crates)
+		if moveMode == 1 {
+			// move each crate
+			for i := 0; i < num; i++ {
+				// fmt.Printf("before: %q %q\n", stacks[src-1].Crates, stacks[dst-1].Crates)
+				crate := stacks[src-1].Crates[0]
+				stacks[dst-1].Crates = insert(stacks[dst-1].Crates, 0, crate)
+				stacks[src-1].Crates = remove(stacks[src-1].Crates, 0)
+				// fmt.Printf("after: %q %q\n", stacks[src-1].Crates, stacks[dst-1].Crates)
+			}
+		} else {
+			for i := num; i > 0; i-- {
+				// fmt.Printf("before: %q %q\n", stacks[src-1].Crates, stacks[dst-1].Crates)
+				crate := stacks[src-1].Crates[i-1]
+				stacks[dst-1].Crates = insert(stacks[dst-1].Crates, 0, crate)
+				stacks[src-1].Crates = remove(stacks[src-1].Crates, i-1)
+				// fmt.Printf("after: %q %q\n", stacks[src-1].Crates, stacks[dst-1].Crates)
+			}
 		}
 	}
 
