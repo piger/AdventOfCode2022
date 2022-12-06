@@ -21,6 +21,16 @@ func checkSlice(chars string) bool {
 	return true
 }
 
+// findMarker finds the first sequence of characters of the specified `length` that
+// are unique and returns the position of the *end* of that sequence in the input string.
+//
+// For example:
+// bvwbjplbgvbhsrlpgdmjqwftvncz
+// 123456789...
+// ____^
+//
+// Using a for loop to iterate through the input string is convenient because the variable `i`
+// always marks the position *after* the group of characters being checked.
 func findMarker(s string, length int) int {
 	if len(s) < length {
 		panic("invalid input")
