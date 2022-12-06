@@ -21,13 +21,13 @@ func checkSlice(chars string) bool {
 	return true
 }
 
-func findMarker(s string) int {
-	if len(s) < 4 {
+func findMarker(s string, length int) int {
+	if len(s) < length {
 		panic("invalid input")
 	}
 
-	for i := 4; i <= len(s); i++ {
-		if checkSlice(s[i-4 : i]) {
+	for i := length; i <= len(s); i++ {
+		if checkSlice(s[i-length : i]) {
 			return i
 		}
 	}
@@ -46,7 +46,8 @@ func run() error {
 		return err
 	}
 
-	fmt.Printf("marker at: %d\n", findMarker(string(contents)))
+	fmt.Printf("marker for length 4 is at: %d\n", findMarker(string(contents), 4))
+	fmt.Printf("marker for length 14 is at: %d\n", findMarker(string(contents), 14))
 
 	return nil
 }
