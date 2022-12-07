@@ -105,6 +105,10 @@ func run() error {
 	printDir(root, 2)
 
 	fmt.Printf("solution: %d\n", sumSizes(root))
+	totRoot := root.TotalSize()
+	fmt.Printf("disk: %d, used: %d, free: %d\n", 70000000, totRoot, 70000000-totRoot)
+	toFree := 30000000 - (70000000 - totRoot)
+	fmt.Printf("solution2: %d\n", findSmallest(root, toFree, 0))
 
 	return nil
 }
@@ -133,6 +137,22 @@ func sumSizes(dir *Dir) int {
 		}
 		result += sumSizes(subdir)
 	}
+	return result
+}
+
+func findSmallest(dir *Dir, toFree, result int) int {
+	for _, subdir := range dir.Children {
+		ts := subdir.TotalSize()
+		if ts >= toFree && (result == 0 || ts <= result) {
+			result = ts
+		}
+
+		x := findSmallest(subdir, toFree, result)
+		if x >= toFree && (x == 0 || x <= result) {
+			result = x
+		}
+	}
+
 	return result
 }
 
