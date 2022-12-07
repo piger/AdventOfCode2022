@@ -13,6 +13,7 @@ type Dir struct {
 	Files    map[string]int
 	Parent   *Dir
 	Children map[string]*Dir
+	Size     int
 }
 
 func NewDir(name string) *Dir {
@@ -74,7 +75,11 @@ func run() error {
 				if err != nil {
 					panic(err)
 				}
-				cwd.Files[fields[1]] = size
+
+				if _, ok := cwd.Files[fields[1]]; !ok {
+					cwd.Files[fields[1]] = size
+					cwd.Size += size
+				}
 			}
 		}
 	}
