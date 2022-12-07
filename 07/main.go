@@ -35,8 +35,21 @@ func (d *Dir) AddSubdir(name string) *Dir {
 	return subdir
 }
 
+func (d *Dir) TotalSize() int {
+	var result int
+
+	for _, size := range d.Files {
+		result += size
+	}
+
+	for _, subdir := range d.Children {
+		result += subdir.TotalSize()
+	}
+	return result
+}
+
 func run() error {
-	fh, err := os.Open("sample")
+	fh, err := os.Open("input")
 	if err != nil {
 		return err
 	}
@@ -91,6 +104,8 @@ func run() error {
 	fmt.Println("/:")
 	printDir(root, 2)
 
+	fmt.Printf("solution: %d\n", sumSizes(root))
+
 	return nil
 }
 
@@ -98,13 +113,27 @@ func printDir(dir *Dir, indent int) {
 	prefix := strings.Repeat(" ", indent)
 
 	for name, subdir := range dir.Children {
-		fmt.Printf("%s%s:\n", prefix, name)
+		fmt.Printf("%s%s: (%d)\n", prefix, name, subdir.TotalSize())
 		printDir(subdir, indent+2)
 	}
 
 	for name, size := range dir.Files {
 		fmt.Printf("%s%s: %d\n", prefix, name, size)
 	}
+}
+
+func sumSizes(dir *Dir) int {
+	var result int
+
+	for _, subdir := range dir.Children {
+		ts := subdir.TotalSize()
+		if ts <= 100000 {
+			fmt.Printf("%s %d\n", subdir.Name, ts)
+			result += ts
+		}
+		result += sumSizes(subdir)
+	}
+	return result
 }
 
 func main() {
