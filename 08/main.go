@@ -7,6 +7,8 @@ import (
 	"strconv"
 )
 
+// isVisible determine if a given tree at point x,y is visible from the edge of the grid;
+// a tree is visible if all of the other trees between it and an edge of the grid are shorter than it.
 func isVisible(x, y, width, height int, grid [][]int) bool {
 	var (
 		visibleN bool
@@ -70,6 +72,100 @@ func isVisible(x, y, width, height int, grid [][]int) bool {
 	fmt.Printf("tree at %dx%d (%d) is visible? %v\n", x, y, tree, visible)
 
 	return visible
+}
+
+func multiply(nums ...int) (result int) {
+	if len(nums) == 0 {
+		return 0
+	} else if len(nums) == 1 {
+		return nums[0]
+	}
+
+	result = nums[0]
+
+	for i := 1; i < len(nums); i++ {
+		result *= nums[i]
+	}
+	return result
+}
+
+func findHighestScore(grid [][]int) int {
+	var result int
+
+	width, height := len(grid[0]), len(grid)
+
+	for y := 0; y < height; y++ {
+		for x := 0; x < width; x++ {
+			count := 0
+			scores := []int{}
+
+			// north
+			if y > 0 {
+				for yy := y - 1; yy >= 0; yy-- {
+					count++
+					if grid[yy][x] >= grid[y][x] {
+						// scores = append(scores, count)
+						// count = 0
+						break
+					}
+				}
+				if count > 0 {
+					scores = append(scores, count)
+					count = 0
+				}
+			}
+
+			// east
+			if x < width-1 {
+				for xx := x + 1; xx < width; xx++ {
+					count++
+					if grid[y][xx] >= grid[y][x] {
+						break
+					}
+				}
+				if count > 0 {
+					scores = append(scores, count)
+					count = 0
+				}
+			}
+
+			// south
+			if y < height-1 {
+				for yy := y + 1; yy < height; yy++ {
+					count++
+					if grid[yy][x] >= grid[y][x] {
+						break
+					}
+				}
+				if count > 0 {
+					scores = append(scores, count)
+					count = 0
+				}
+			}
+
+			// west
+			if x > 0 {
+				for xx := x - 1; xx >= 0; xx-- {
+					count++
+					if grid[y][xx] >= grid[y][x] {
+						break
+					}
+				}
+				if count > 0 {
+					scores = append(scores, count)
+					count = 0
+				}
+			}
+
+			score := multiply(scores...)
+			if score > result {
+				result = score
+			}
+
+		}
+	}
+
+	return result
 }
 
 func run(filename string) error {
@@ -138,6 +234,7 @@ func run(filename string) error {
 	}
 
 	fmt.Printf("total visible trees: %d\n", visible)
+	fmt.Printf("highest scenic score: %d\n", findHighestScore(grid))
 
 	return nil
 }
