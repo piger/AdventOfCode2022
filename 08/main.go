@@ -236,7 +236,6 @@ func run(filename string) error {
 				visible++
 			}
 		}
-		fmt.Println()
 	}
 
 	fmt.Printf("total visible trees: %d\n", visible)
