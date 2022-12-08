@@ -51,7 +51,7 @@ func Test_dirGen(t *testing.T) {
 
 	for _, test := range tests {
 		results := []Coordinate{}
-		for cc := range dirGen(test.Direction, test.X, test.Y, test.Width, test.Height) {
+		for cc := range coordGen(test.Direction, test.X, test.Y, test.Width, test.Height) {
 			results = append(results, cc)
 		}
 		if len(results) != len(test.Expected) {

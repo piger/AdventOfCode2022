@@ -25,7 +25,13 @@ type Coordinate struct {
 	Y int
 }
 
-func dirGen(d Direction, x, y, width, height int) chan Coordinate {
+// coordGen generates Coordinate objects for the given direction `d`; it's implemented as a
+// "generator" which returns a channel, which is nice when the input is unknown and can potentially
+// be very large, but has the drawback that the channel must be drained to avoid leaking goroutines.
+//
+// An alternative solution is to pass a "break" channel as a parameter and then in each for loop
+// add a select that breaks the loop when the "break" channel is closed.
+func coordGen(d Direction, x, y, width, height int) <-chan Coordinate {
 	out := make(chan Coordinate)
 
 	go func() {
@@ -75,7 +81,7 @@ func dirGen(d Direction, x, y, width, height int) chan Coordinate {
 	return out
 }
 
-func drain[T any](ch chan T) {
+func drain[T any](ch <-chan T) {
 	for {
 		select {
 		case _, ok := <-ch:
@@ -99,7 +105,7 @@ Loop:
 	for _, d := range []Direction{NORTH, EAST, SOUTH, WEST} {
 		fmt.Printf("Checking direction: %s\n", d)
 
-		coords := dirGen(d, x, y, width, height)
+		coords := coordGen(d, x, y, width, height)
 		for cc := range coords {
 			fmt.Printf("checking %dx%d with %dx%d: %v\n", x, y, cc.X, cc.Y, grid[cc.Y][cc.X] > tree)
 			// if the tree is NOT visible in this direction:
@@ -149,7 +155,7 @@ func findHighestScore(grid [][]int) int {
 			scores := []int{}
 
 			for _, d := range []Direction{NORTH, EAST, SOUTH, WEST} {
-				coords := dirGen(d, x, y, width, height)
+				coords := coordGen(d, x, y, width, height)
 				for cc := range coords {
 					count++
 					if grid[cc.Y][cc.X] >= grid[y][x] {
