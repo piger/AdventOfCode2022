@@ -35,47 +35,36 @@ func coordGen(d Direction, x, y, width, height int) <-chan Coordinate {
 	out := make(chan Coordinate)
 
 	go func() {
+		defer func() {
+			close(out)
+		}()
+
+		// edge cases where there's no coordinate to generate.
+		if (d == NORTH && y == 0) || (d == EAST && x >= width) || (d == SOUTH && y >= height) || (d == WEST && x == 0) {
+			return
+
+		}
+
 		switch d {
 		case NORTH:
-			if y == 0 {
-				break
-			}
-
 			for yy := y - 1; yy >= 0; yy-- {
 				out <- Coordinate{X: x, Y: yy}
 			}
-
 		case EAST:
-			if x >= width {
-				break
-			}
-
 			for xx := x + 1; xx < width; xx++ {
 				out <- Coordinate{X: xx, Y: y}
 			}
-
 		case SOUTH:
-			if y >= height {
-				break
-			}
-
 			for yy := y + 1; yy < height; yy++ {
 				out <- Coordinate{X: x, Y: yy}
 			}
-
 		case WEST:
-			if x == 0 {
-				break
-			}
-
 			for xx := x - 1; xx >= 0; xx-- {
 				out <- Coordinate{X: xx, Y: y}
 			}
 		default:
 			panic("unknown direction")
 		}
-
-		close(out)
 	}()
 
 	return out
