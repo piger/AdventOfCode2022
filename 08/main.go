@@ -7,71 +7,120 @@ import (
 	"strconv"
 )
 
+type Direction int
+
+const (
+	NORTH Direction = iota
+	EAST
+	SOUTH
+	WEST
+)
+
+func (d Direction) String() string {
+	return [...]string{"NORTH", "EAST", "SOUTH", "WEST"}[d]
+}
+
+type Coordinate struct {
+	X int
+	Y int
+}
+
+func dirGen(d Direction, x, y, width, height int) chan Coordinate {
+	out := make(chan Coordinate)
+
+	go func() {
+		switch d {
+		case NORTH:
+			if y == 0 {
+				break
+			}
+
+			for yy := y - 1; yy >= 0; yy-- {
+				out <- Coordinate{X: x, Y: yy}
+			}
+
+		case EAST:
+			if x >= width {
+				break
+			}
+
+			for xx := x + 1; xx < width; xx++ {
+				out <- Coordinate{X: xx, Y: y}
+			}
+
+		case SOUTH:
+			if y >= height {
+				break
+			}
+
+			for yy := y + 1; yy < height; yy++ {
+				out <- Coordinate{X: x, Y: yy}
+			}
+
+		case WEST:
+			if x == 0 {
+				break
+			}
+
+			for xx := x - 1; xx >= 0; xx-- {
+				out <- Coordinate{X: xx, Y: y}
+			}
+		default:
+			panic("unknown direction")
+		}
+
+		close(out)
+	}()
+
+	return out
+}
+
+func drain[T any](ch chan T) {
+	for {
+		select {
+		case _, ok := <-ch:
+			if !ok {
+				return
+			}
+		default:
+			return
+		}
+	}
+}
+
 // isVisible determine if a given tree at point x,y is visible from the edge of the grid;
 // a tree is visible if all of the other trees between it and an edge of the grid are shorter than it.
 func isVisible(x, y, width, height int, grid [][]int) bool {
-	var (
-		visibleN bool
-		visibleE bool
-		visibleS bool
-		visibleW bool
-	)
-
 	tree := grid[y][x]
 	fmt.Printf("analysing tree at %dx%d (%d)\n", x, y, tree)
+	visibility := make(map[Direction]bool)
 
-	// north
-	for yPos := y - 1; yPos >= 0; yPos-- {
-		if grid[yPos][x] >= tree {
-			fmt.Printf("not visible from N: %dx%d (%d)\n", x, yPos, grid[yPos][x])
-			visibleN = false
-			break
-		} else {
-			visibleN = true
-			fmt.Printf("visible from N: %dx%d (%d)\n", x, yPos, grid[yPos][x])
+Loop:
+	for _, d := range []Direction{NORTH, EAST, SOUTH, WEST} {
+		fmt.Printf("Checking direction: %s\n", d)
+
+		coords := dirGen(d, x, y, width, height)
+		for cc := range coords {
+			fmt.Printf("checking %dx%d with %dx%d: %v\n", x, y, cc.X, cc.Y, grid[cc.Y][cc.X] > tree)
+			// if the tree is NOT visible in this direction:
+			if grid[cc.Y][cc.X] >= tree {
+				drain(coords)
+				visibility[d] = false
+				continue Loop
+			}
+		}
+		visibility[d] = true
+	}
+
+	var result bool
+	for k, v := range visibility {
+		if v {
+			fmt.Printf("visible at %s\n", k)
+			result = true
 		}
 	}
 
-	// east
-	for xPos := x + 1; xPos < width; xPos++ {
-		if grid[y][xPos] >= tree {
-			fmt.Printf("not visible from E: %dx%d (%d)\n", xPos, y, grid[y][xPos])
-			visibleE = false
-			break
-		} else {
-			visibleE = true
-			fmt.Printf("visible from E: %dx%d (%d)\n", xPos, y, grid[y][xPos])
-		}
-	}
-
-	// south
-	for yPos := y + 1; yPos < height; yPos++ {
-		if grid[yPos][x] >= tree {
-			fmt.Printf("not visible from S: %dx%d (%d)\n", x, yPos, grid[yPos][x])
-			visibleS = false
-			break
-		} else {
-			visibleS = true
-			fmt.Printf("visible from S: %dx%d (%d)\n", x, yPos, grid[yPos][x])
-		}
-	}
-
-	// west
-	for xPos := x - 1; xPos >= 0; xPos-- {
-		if grid[y][xPos] >= tree {
-			fmt.Printf("not visible from W: %dx%d (%d)\n", xPos, y, grid[y][xPos])
-			visibleW = false
-			break
-		} else {
-			visibleW = true
-			fmt.Printf("visible from W: %dx%d (%d)\n", xPos, y, grid[y][xPos])
-		}
-	}
-
-	visible := visibleN || visibleE || visibleS || visibleW
-	fmt.Printf("tree at %dx%d (%d) is visible? %v\n", x, y, tree, visible)
-
-	return visible
+	return result
 }
 
 func multiply(nums ...int) (result int) {
