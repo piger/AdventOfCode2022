@@ -148,58 +148,15 @@ func findHighestScore(grid [][]int) int {
 			count := 0
 			scores := []int{}
 
-			// north
-			if y > 0 {
-				for yy := y - 1; yy >= 0; yy-- {
+			for _, d := range []Direction{NORTH, EAST, SOUTH, WEST} {
+				coords := dirGen(d, x, y, width, height)
+				for cc := range coords {
 					count++
-					if grid[yy][x] >= grid[y][x] {
-						// scores = append(scores, count)
-						// count = 0
+					if grid[cc.Y][cc.X] >= grid[y][x] {
 						break
 					}
 				}
-				if count > 0 {
-					scores = append(scores, count)
-					count = 0
-				}
-			}
-
-			// east
-			if x < width-1 {
-				for xx := x + 1; xx < width; xx++ {
-					count++
-					if grid[y][xx] >= grid[y][x] {
-						break
-					}
-				}
-				if count > 0 {
-					scores = append(scores, count)
-					count = 0
-				}
-			}
-
-			// south
-			if y < height-1 {
-				for yy := y + 1; yy < height; yy++ {
-					count++
-					if grid[yy][x] >= grid[y][x] {
-						break
-					}
-				}
-				if count > 0 {
-					scores = append(scores, count)
-					count = 0
-				}
-			}
-
-			// west
-			if x > 0 {
-				for xx := x - 1; xx >= 0; xx-- {
-					count++
-					if grid[y][xx] >= grid[y][x] {
-						break
-					}
-				}
+				drain(coords)
 				if count > 0 {
 					scores = append(scores, count)
 					count = 0
