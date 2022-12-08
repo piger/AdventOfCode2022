@@ -8,59 +8,65 @@ import (
 )
 
 func isVisible(x, y, width, height int, grid [][]int) bool {
-	var visible bool
+	var (
+		visibleN bool
+		visibleE bool
+		visibleS bool
+		visibleW bool
+	)
 
 	tree := grid[y][x]
 	fmt.Printf("analysing tree at %dx%d (%d)\n", x, y, tree)
 
 	// north
 	for yPos := y - 1; yPos >= 0; yPos-- {
-		if grid[yPos][x] > tree {
+		if grid[yPos][x] >= tree {
 			fmt.Printf("not visible from N: %dx%d (%d)\n", x, yPos, grid[yPos][x])
-			visible = false
+			visibleN = false
 			break
 		} else {
-			visible = true
+			visibleN = true
 			fmt.Printf("visible from N: %dx%d (%d)\n", x, yPos, grid[yPos][x])
 		}
 	}
 
 	// east
 	for xPos := x + 1; xPos < width; xPos++ {
-		if grid[y][xPos] > tree {
+		if grid[y][xPos] >= tree {
 			fmt.Printf("not visible from E: %dx%d (%d)\n", xPos, y, grid[y][xPos])
-			visible = false
+			visibleE = false
 			break
 		} else {
-			visible = true
+			visibleE = true
 			fmt.Printf("visible from E: %dx%d (%d)\n", xPos, y, grid[y][xPos])
 		}
 	}
 
 	// south
 	for yPos := y + 1; yPos < height; yPos++ {
-		if grid[yPos][x] > tree {
+		if grid[yPos][x] >= tree {
 			fmt.Printf("not visible from S: %dx%d (%d)\n", x, yPos, grid[yPos][x])
-			visible = false
+			visibleS = false
 			break
 		} else {
-			visible = true
+			visibleS = true
 			fmt.Printf("visible from S: %dx%d (%d)\n", x, yPos, grid[yPos][x])
 		}
 	}
 
 	// west
 	for xPos := x - 1; xPos >= 0; xPos-- {
-		if grid[y][xPos] > tree {
+		if grid[y][xPos] >= tree {
 			fmt.Printf("not visible from W: %dx%d (%d)\n", xPos, y, grid[y][xPos])
-			visible = false
+			visibleW = false
 			break
 		} else {
-			visible = true
+			visibleW = true
 			fmt.Printf("visible from W: %dx%d (%d)\n", xPos, y, grid[y][xPos])
 		}
 	}
 
+	visible := visibleN || visibleE || visibleS || visibleW
 	fmt.Printf("tree at %dx%d (%d) is visible? %v\n", x, y, tree, visible)
 
 	return visible
@@ -106,6 +112,16 @@ func run(filename string) error {
 		}
 	}
 
+	/*
+		// print grid
+		for y := 0; y < height; y++ {
+			for x := 0; x < width; x++ {
+				fmt.Printf("%d", grid[y][x])
+			}
+			fmt.Println()
+		}
+	*/
+
 	// actual problem
 	var visible int
 	// trees on the edges are always visible
@@ -114,7 +130,7 @@ func run(filename string) error {
 
 	for y := 1; y < height-1; y++ {
 		for x := 1; x < width-1; x++ {
-			if !isVisible(x, y, width, height, grid) {
+			if isVisible(x, y, width, height, grid) {
 				visible++
 			}
 		}
