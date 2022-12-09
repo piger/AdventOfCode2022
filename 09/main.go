@@ -204,9 +204,10 @@ func run(filename string) error {
 				if err != nil {
 					return err
 				}
-				cells[tail.Add(moveTo)] = struct{}{}
-				fmt.Printf("move tail from %v to %v -- head is at %v\n", tail, tail.Add(moveTo), head)
-				tail = tail.Add(moveTo)
+				destTail := tail.Add(moveTo)
+				cells[destTail] = struct{}{}
+				fmt.Printf("move tail from %v to %v -- head is at %v\n", tail, destTail, head)
+				tail.Set(destTail)
 			}
 		}
 	}
