@@ -222,6 +222,80 @@ func run(filename string) error {
 	return nil
 }
 
+func run2(filename string) error {
+	fh, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+	defer fh.Close()
+
+	knots := []Pos{}
+	for i := 0; i < 10; i++ {
+		knots = append(knots, Pos{0, 0})
+	}
+
+	cells := make(map[Pos]struct{})
+	cells[knots[0]] = struct{}{}
+
+	s := bufio.NewScanner(fh)
+	for s.Scan() {
+		fields := strings.Split(s.Text(), " ")
+		if len(fields) != 2 {
+			return fmt.Errorf("wrong number of fields in line: %q", fields)
+		}
+
+		var d Direction
+		switch fields[0] {
+		case "U":
+			d = UP
+		case "D":
+			d = DOWN
+		case "L":
+			d = LEFT
+		case "R":
+			d = RIGHT
+		default:
+			return fmt.Errorf("unknown direction: %s", fields[0])
+		}
+
+		steps, err := strconv.Atoi(fields[1])
+		if err != nil {
+			return err
+		}
+
+		fmt.Printf("%v -> %d\n", d, steps)
+		for i := 0; i < steps; i++ {
+			dest := knots[0].Add(directionMove(d))
+			fmt.Printf("move head from %v to %v\n", knots[0], dest)
+			knots[0].Set(dest)
+
+			for i := 1; i < len(knots); i++ {
+				if !knots[i].Adjacent(knots[i-1]) {
+					moveTo, err := knots[i].GetCloser(knots[i-1])
+					if err != nil {
+						return err
+					}
+					destTail := knots[i].Add(moveTo)
+					if i == len(knots)-1 {
+						cells[destTail] = struct{}{}
+					}
+					fmt.Printf("move tail from %v to %v -- head is at %v\n", knots[i], destTail, knots[0])
+					knots[i].Set(destTail)
+				}
+			}
+		}
+	}
+
+	if err := s.Err(); err != nil {
+		return err
+	}
+
+	// fmt.Printf("final positions: head=%v, tail=%v\n", head, tail)
+	fmt.Printf("tail visited %d cells at least once\n", len(cells))
+
+	return nil
+}
+
 func main() {
 	filename := "input"
 	if len(os.Args) > 1 {
@@ -229,6 +303,11 @@ func main() {
 	}
 
 	if err := run(filename); err != nil {
+		fmt.Printf("error: %s\n", err)
+		os.Exit(1)
+	}
+
+	if err := run2(filename); err != nil {
 		fmt.Printf("error: %s\n", err)
 		os.Exit(1)
 	}
