@@ -77,6 +77,11 @@ func (p Pos) Add(other Pos) Pos {
 	return result
 }
 
+func (p *Pos) Set(dest Pos) {
+	p.X = dest.X
+	p.Y = dest.Y
+}
+
 func (p Pos) Equal(other Pos) bool {
 	if p.X == other.X && p.Y == other.Y {
 		return true
