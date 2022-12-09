@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -141,6 +142,16 @@ func (p Pos) GetCloser(other Pos) (Pos, error) {
 	}
 
 	return Pos{0, 0}, fmt.Errorf("cannot determine how to get closer to %v", other)
+}
+
+// needToMove is a smarter way to tell if the distance between two Pos is
+// greater than `amount`, which indicates that the tail needs to move.
+// In the 1st problem the tail moves when the distance is 2.
+// Comes from a comment on Reddit.
+func needToMove(one, other Pos, amount int) bool {
+	x := int(math.Abs(float64(one.X - other.X)))
+	y := int(math.Abs(float64(one.Y - other.Y)))
+	return x > amount || y > amount
 }
 
 func run(filename string) error {
