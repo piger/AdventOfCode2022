@@ -41,6 +41,26 @@ var directions = []Pos{
 	{-1, -1},
 }
 
+func diagonal() []Pos {
+	var result []Pos
+	for i, d := range directions {
+		if i%2 != 0 {
+			result = append(result, d)
+		}
+	}
+	return result
+}
+
+func straight() []Pos {
+	var result []Pos
+	for i, d := range directions {
+		if i%2 == 0 {
+			result = append(result, d)
+		}
+	}
+	return result
+}
+
 type Pos struct {
 	X int
 	Y int

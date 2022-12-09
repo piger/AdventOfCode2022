@@ -29,7 +29,7 @@ func TestSurrounding(t *testing.T) {
 		P        Pos
 		Expected []Pos
 	}{
-		{Pos{10, 20}, []Pos{{10, 19}, {11, 19}, {11, 20}, {11, 21}, {11, 20}, {9, 21}, {9, 20}, {9, 19}}},
+		{Pos{10, 20}, []Pos{{10, 19}, {11, 19}, {11, 20}, {11, 21}, {10, 21}, {9, 21}, {9, 20}, {9, 19}}},
 	}
 
 	for _, test := range tests {
@@ -54,5 +54,33 @@ func TestAdjacent(t *testing.T) {
 		if result != test.Expected {
 			t.Errorf("adjacent is wrong: expected %v, got %v (for %+v and %+v)", test.Expected, result, test.P, test.Other)
 		}
+	}
+}
+
+func Test_diagonal(t *testing.T) {
+	expected := []Pos{
+		{1, -1},
+		{1, 1},
+		{-1, 1},
+		{-1, -1},
+	}
+
+	result := diagonal()
+	if diff := cmp.Diff(expected, result); diff != "" {
+		t.Errorf("diagonal is wrong:\n%s", diff)
+	}
+}
+
+func Test_straight(t *testing.T) {
+	expected := []Pos{
+		{0, -1},
+		{1, 0},
+		{0, 1},
+		{-1, 0},
+	}
+
+	result := straight()
+	if diff := cmp.Diff(expected, result); diff != "" {
+		t.Errorf("straight is wrong:\n%s", diff)
 	}
 }
