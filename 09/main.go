@@ -130,6 +130,9 @@ func run(filename string) error {
 	head := Pos{X: 0, Y: 0}
 	tail := Pos{X: 0, Y: 0}
 
+	count := 0
+	cells := make(map[Pos]struct{})
+
 	s := bufio.NewScanner(fh)
 	for s.Scan() {
 		fields := strings.Split(s.Text(), " ")
@@ -164,11 +167,13 @@ func run(filename string) error {
 			head.Set(dest)
 
 			if !tail.Adjacent(head) {
+				count++
 				// same row or column
 				if head.X == tail.X || head.Y == tail.Y {
 					for _, d := range straight() {
 						if tail.Add(d).Adjacent(head) {
 							fmt.Printf("move tail from %v to %v\n", tail, tail.Add(d))
+							cells[tail.Add(d)] = struct{}{}
 							tail = tail.Add(d)
 							continue Loop
 						}
@@ -179,6 +184,7 @@ func run(filename string) error {
 					for _, d := range diagonal() {
 						if tail.Add(d).Adjacent(head) {
 							fmt.Printf("move tail diagonally from %v to %v\n", tail, tail.Add(d))
+							cells[tail.Add(d)] = struct{}{}
 							tail = tail.Add(d)
 							continue Loop
 						}
@@ -194,6 +200,7 @@ func run(filename string) error {
 	}
 
 	fmt.Printf("final positions: head=%v, tail=%v\n", head, tail)
+	fmt.Printf("tail moved %d times visiting %d cells\n", count, len(cells))
 
 	return nil
 }
