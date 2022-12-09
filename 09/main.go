@@ -32,7 +32,7 @@ var directions = []Pos{
 	// south-east
 	{1, 1},
 	// south
-	{1, 0},
+	{0, 1},
 	// south-west
 	{-1, 1},
 	// west
