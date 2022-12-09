@@ -164,8 +164,8 @@ func run(filename string) error {
 	head := Pos{X: 0, Y: 0}
 	tail := Pos{X: 0, Y: 0}
 
-	count := 0
 	cells := make(map[Pos]struct{})
+	cells[tail] = struct{}{}
 
 	s := bufio.NewScanner(fh)
 	for s.Scan() {
@@ -200,7 +200,6 @@ func run(filename string) error {
 			head.Set(dest)
 
 			if !tail.Adjacent(head) {
-				count++
 				moveTo, err := tail.GetCloser(head)
 				if err != nil {
 					return err
@@ -217,7 +216,7 @@ func run(filename string) error {
 	}
 
 	fmt.Printf("final positions: head=%v, tail=%v\n", head, tail)
-	fmt.Printf("tail moved %d times visiting %d cells\n", count, len(cells)+1)
+	fmt.Printf("tail visited %d cells at least once\n", len(cells))
 
 	return nil
 }
