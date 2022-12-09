@@ -41,6 +41,20 @@ var directions = []Pos{
 	{-1, -1},
 }
 
+func directionMove(d Direction) Pos {
+	switch d {
+	case UP:
+		return directions[0]
+	case RIGHT:
+		return directions[2]
+	case DOWN:
+		return directions[4]
+	case LEFT:
+		return directions[6]
+	}
+	panic("aaah!")
+}
+
 func diagonal() []Pos {
 	var result []Pos
 	for i, d := range directions {
@@ -113,8 +127,8 @@ func run(filename string) error {
 	}
 	defer fh.Close()
 
-	// head := Pos{X: 0, Y: 0}
-	// tail := Pos{X: 0, Y: 0}
+	head := Pos{X: 0, Y: 0}
+	tail := Pos{X: 0, Y: 0}
 
 	s := bufio.NewScanner(fh)
 	for s.Scan() {
@@ -143,7 +157,43 @@ func run(filename string) error {
 		}
 
 		fmt.Printf("%v -> %d\n", d, steps)
+	Loop:
+		for i := 0; i < steps; i++ {
+			dest := head.Add(directionMove(d))
+			fmt.Printf("move head from %v to %v\n", head, dest)
+			head.Set(dest)
+
+			if !tail.Adjacent(head) {
+				// same row or column
+				if head.X == tail.X || head.Y == tail.Y {
+					for _, d := range straight() {
+						if tail.Add(d).Adjacent(head) {
+							fmt.Printf("move tail from %v to %v\n", tail, tail.Add(d))
+							tail = tail.Add(d)
+							continue Loop
+						}
+					}
+					panic("could not find a valid straight movement for the tail")
+				} else {
+					// need to move diagonally
+					for _, d := range diagonal() {
+						if tail.Add(d).Adjacent(head) {
+							fmt.Printf("move tail diagonally from %v to %v\n", tail, tail.Add(d))
+							tail = tail.Add(d)
+							continue Loop
+						}
+					}
+					panic("could not find a valid diagonal movement for tail")
+				}
+			}
+		}
 	}
+
+	if err := s.Err(); err != nil {
+		return err
+	}
+
+	fmt.Printf("final positions: head=%v, tail=%v\n", head, tail)
 
 	return nil
 }
