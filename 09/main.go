@@ -148,6 +148,14 @@ func (p Pos) GetCloser(other Pos) (Pos, error) {
 // greater than `amount`, which indicates that the tail needs to move.
 // In the 1st problem the tail moves when the distance is 2.
 // Comes from a comment on Reddit.
+//
+// Update: this is actually just calculating the "distance" between two numbers,
+// and it's using abs() just to not have to care about the order of the parameters,
+// so as to always get a positive value.
+// The actual formula for the distance between two points in a cartesian plane is... our dear
+// friend Pitagora! And it's sqrt(pow(other.X - one.X, 2)) + sqrt(pow(other.Y - one.Y, 2))
+// Interestingly enough if I changed this function to return x + y, I would get the same
+// result that I would get by applying the Pitagora method...
 func needToMove(one, other Pos, amount int) bool {
 	x := int(math.Abs(float64(one.X - other.X)))
 	y := int(math.Abs(float64(one.Y - other.Y)))
