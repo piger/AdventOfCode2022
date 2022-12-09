@@ -104,8 +104,12 @@ func (p Pos) Equal(other Pos) bool {
 }
 
 func (p Pos) Adjacent(other Pos) bool {
-	for _, pp := range p.Surrounding() {
-		if other.Equal(pp) {
+	if p.Equal(other) {
+		return true
+	}
+
+	for _, pp := range other.Surrounding() {
+		if p.Equal(pp) {
 			return true
 		}
 	}
