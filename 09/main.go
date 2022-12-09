@@ -124,6 +124,25 @@ func (p Pos) Surrounding() []Pos {
 	return result
 }
 
+// GetCloser returns a "step Pos" that when added to p will get closer to "other"
+func (p Pos) GetCloser(other Pos) (Pos, error) {
+	var candidates []Pos
+	if p.X == other.X || p.Y == other.Y {
+		candidates = append(candidates, straight()...)
+	} else {
+		candidates = append(candidates, diagonal()...)
+	}
+
+	for _, cc := range candidates {
+		tmp := p.Add(cc)
+		if tmp.Adjacent(other) {
+			return cc, nil
+		}
+	}
+
+	return Pos{0, 0}, fmt.Errorf("cannot determine how to get closer to %v", other)
+}
+
 func run(filename string) error {
 	fh, err := os.Open(filename)
 	if err != nil {
@@ -164,7 +183,6 @@ func run(filename string) error {
 		}
 
 		fmt.Printf("%v -> %d\n", d, steps)
-	Loop:
 		for i := 0; i < steps; i++ {
 			dest := head.Add(directionMove(d))
 			fmt.Printf("move head from %v to %v\n", head, dest)
@@ -172,29 +190,13 @@ func run(filename string) error {
 
 			if !tail.Adjacent(head) {
 				count++
-				// same row or column
-				if head.X == tail.X || head.Y == tail.Y {
-					for _, d := range straight() {
-						if tail.Add(d).Adjacent(head) {
-							fmt.Printf("move tail from %v to %v\n", tail, tail.Add(d))
-							cells[tail.Add(d)] = struct{}{}
-							tail = tail.Add(d)
-							continue Loop
-						}
-					}
-					panic("could not find a valid straight movement for the tail")
-				} else {
-					// need to move diagonally
-					for _, d := range diagonal() {
-						if tail.Add(d).Adjacent(head) {
-							fmt.Printf("move tail diagonally from %v to %v\n", tail, tail.Add(d))
-							cells[tail.Add(d)] = struct{}{}
-							tail = tail.Add(d)
-							continue Loop
-						}
-					}
-					panic("could not find a valid diagonal movement for tail")
+				moveTo, err := tail.GetCloser(head)
+				if err != nil {
+					return err
 				}
+				cells[tail.Add(moveTo)] = struct{}{}
+				fmt.Printf("move tail from %v to %v -- head is at %v\n", tail, tail.Add(moveTo), head)
+				tail = tail.Add(moveTo)
 			}
 		}
 	}
@@ -204,7 +206,7 @@ func run(filename string) error {
 	}
 
 	fmt.Printf("final positions: head=%v, tail=%v\n", head, tail)
-	fmt.Printf("tail moved %d times visiting %d cells\n", count, len(cells))
+	fmt.Printf("tail moved %d times visiting %d cells\n", count, len(cells)+1)
 
 	return nil
 }
